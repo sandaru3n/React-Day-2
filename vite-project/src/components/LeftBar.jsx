@@ -5,7 +5,6 @@ import Icons from "./ui/Icons"
 const NAV = [
   { id: 'students', url:'/students' ,   label: 'Students', icon: Icons.students },
   { id: 'branches', url:'/branches'  ,  label: 'Branches', icon: Icons.branches },
-  { id: 'attendance', url:'/attendance',    label: 'Attendance', icon: Icons.attendance }
 ]
 
 export default function Sidebar({ collapsed, setCollapsed }) {

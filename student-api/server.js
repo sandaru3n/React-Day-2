@@ -1,5 +1,6 @@
 import express from "express";
 import StudentRoute from "./routes/student.route.js";
+import BranchRoute from "./routes/branch.route.js";
 import cors from "cors"
 
 const app = express ()
@@ -9,6 +10,7 @@ app.use(express.json())
 
 
 app.use("/student",StudentRoute)
+app.use("/branch",BranchRoute)
 
 app.get("/students", StudentRoute)
 

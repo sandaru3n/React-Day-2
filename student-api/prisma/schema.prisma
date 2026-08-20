@@ -21,3 +21,13 @@ model Student {
   course String?
   Branch String
 }
+
+model Branch {
+  id           String @id
+  name         String
+  city         String
+  studentCount Int
+  activeCount  Int
+  manager      String
+  status       String
+}

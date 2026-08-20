@@ -33,6 +33,37 @@ export const CreateStudent = async (req, res) => {
     try {
         const { name, age, email, phone, course, branchId } = req.body;
 
+        const existingStudents = await prisma.student.findMany({
+            where: {
+                OR: [
+                    { email },
+                    { phone },
+                ],
+            },
+            select: {
+                email: true,
+                phone: true,
+            },
+        })
+
+        const errors = {}
+
+        if (existingStudents.some((student) => student.email === email)) {
+            errors.email = "Email already exists"
+        }
+
+        if (existingStudents.some((student) => student.phone === phone)) {
+            errors.phone = "Phone number already exists"
+        }
+
+        if (Object.keys(errors).length > 0) {
+            return res.status(409).json({
+                success: false,
+                message: Object.values(errors).join(", "),
+                errors,
+            })
+        }
+
         await prisma.student.create({
             data:{
                 full_name: name,
@@ -64,6 +95,27 @@ export const CreateStudent = async (req, res) => {
 
 export const GetStudents = async (req, res) => {
     try {
+        const { id } = req.params
+
+        if (id) {
+            const student = await prisma.student.findUnique({
+                where: { id: parseInt(id) },
+            })
+
+            if (!student) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Student not found",
+                })
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: "Student fetched successfully",
+                data: formatStudent(student),
+            })
+        }
+
         const students = await prisma.student.findMany({
             orderBy: { id: "desc" },
         })
@@ -89,6 +141,30 @@ export const UpdateStudent = async (req, res) => {
     try {
         const { id } = req.params
         const { name, age, email, course, status, paymentStatus, branchId } = req.body
+
+        const existingStudents = await prisma.student.findMany({
+            where: {
+                email,
+                NOT: { id: parseInt(id) },
+            },
+            select: {
+                email: true,
+            },
+        })
+
+        const errors = {}
+
+        if (existingStudents.some((student) => student.email === email)) {
+            errors.email = "Email already exists"
+        }
+
+        if (Object.keys(errors).length > 0) {
+            return res.status(409).json({
+                success: false,
+                message: Object.values(errors).join(", "),
+                errors,
+            })
+        }
 
         const student = await prisma.student.update({
             where: { id: parseInt(id) },

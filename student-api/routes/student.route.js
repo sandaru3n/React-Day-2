@@ -10,6 +10,7 @@ const StudentRoute = express.Router()
 
 StudentRoute.post('/', validate(createStudentSchema), CreateStudent)
 StudentRoute.get('/', GetStudents)
+StudentRoute.get('/:id', GetStudents)
 StudentRoute.put('/:id', validate(editStudentSchema), UpdateStudent)
 StudentRoute.delete('/:id', validateParams(deleteStudentSchema), DeleteStudent)
 export default StudentRoute
