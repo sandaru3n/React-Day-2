@@ -14,20 +14,34 @@ export const CreateBranch = async (req, res) => {
     try {
         const { name, city, manager, status, studentCount, activeCount } = req.body;
 
-        const existingBranch = await prisma.branch.findFirst({
-            where: { name },
+        const existName = await prisma.branch.findFirst({
+            where: {
+                name: name
+            }
         })
 
-        if (existingBranch) {
-            return res.status(409).json({
+        if (existName) {
+            return res.status(400).json({
                 success: false,
-                message: "Branch name already exists",
-                errors: { name: "Branch name already exists" },
+                message: "branch name already exists"
             })
         }
 
         const count = await prisma.branch.count()
         const id = `b${count + 1}`
+
+        const existId = await prisma.branch.findFirst({
+            where: {
+                id: id
+            }
+        })
+
+        if (existId) {
+            return res.status(400).json({
+                success: false,
+                message: "branch id already exists"
+            })
+        }
 
         await prisma.branch.create({
             data: {
@@ -43,16 +57,14 @@ export const CreateBranch = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: "Branch created successfully",
+            message: "branch created successfully",
         });
 
     } catch (error) {
-        console.error(error);
         return res.status(500).json({
             success: false,
-            message: "Internal server error",
-            error: error.message
-        });
+            error: "Internal Server Error!"
+        })
     }
 };
 
@@ -86,7 +98,7 @@ export const GetBranches = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Branches fetched successfully",
+            message: "branches fetched successfully",
             data: branches.map(formatBranch),
         })
 
@@ -106,8 +118,39 @@ export const UpdateBranch = async (req, res) => {
         const { id } = req.params
         const { name, city, manager, status, studentCount, activeCount } = req.body
 
-        const branch = await prisma.branch.update({
-            where: { id },
+        if (!id) {
+            return res.json({ msg: "invalid type" })
+        }
+
+        const exist = await prisma.branch.findFirst({
+            where: {
+                id: id
+            }
+        })
+
+        if (!exist) {
+            return res.status(409).json({
+                success: false,
+                message: "branch id not found",
+            })
+        }
+
+        const existName = await prisma.branch.findFirst({
+            where: {
+                name: name,
+                NOT: { id: id }
+            }
+        })
+
+        if (existName) {
+            return res.status(400).json({
+                success: false,
+                message: "branch name already exists"
+            })
+        }
+
+        const data = await prisma.branch.update({
+            where: { id: id },
             data: {
                 name,
                 city,
@@ -120,25 +163,14 @@ export const UpdateBranch = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Branch updated successfully",
-            data: formatBranch(branch),
+            message: "branch updated successfully",
+            data: formatBranch(data)
         })
-
     } catch (error) {
-        console.error(error);
-
-        if (error.code === "P2025") {
-            return res.status(404).json({
-                success: false,
-                message: "Branch not found",
-            });
-        }
-
         return res.status(500).json({
             success: false,
-            message: "Internal server error",
-            error: error.message,
-        });
+            error: "Internal Server Error!"
+        })
     }
 }
 
@@ -147,29 +179,37 @@ export const DeleteBranch = async (req, res) => {
     try {
         const { id } = req.params
 
+        if (!id) {
+            return res.json({ msg: "invalid type" })
+        }
+
+        const exist = await prisma.branch.findFirst({
+            where: {
+                id: id
+            }
+        })
+
+        if (!exist) {
+            return res.status(409).json({
+                success: false,
+                message: "Branch id not found",
+            })
+        }
+
         await prisma.branch.delete({
-            where: { id },
+            where: {
+                id: id
+            }
         })
 
         return res.status(200).json({
             success: true,
-            message: "Branch deleted successfully",
+            message: "branch deleted successfully"
         })
-
     } catch (error) {
-        console.error(error);
-
-        if (error.code === "P2025") {
-            return res.status(404).json({
-                success: false,
-                message: "Branch not found",
-            });
-        }
-
         return res.status(500).json({
             success: false,
-            message: "Internal server error",
-            error: error.message,
-        });
+            error: "Internal Server Error!"
+        })
     }
 }
