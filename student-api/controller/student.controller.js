@@ -48,11 +48,11 @@ export const CreateStudent = async (req, res) => {
 
         const errors = {}
 
-        if (existingStudents.some((student) => student.email === email)) {
+        if (existingStudents.some((student) => student.email == email)) {
             errors.email = "email already exists"
         }
 
-        if (existingStudents.some((student) => student.phone === phone)) {
+        if (existingStudents.some((student) => student.phone == phone)) {
             errors.phone = "phone number already exists"
         }
 
