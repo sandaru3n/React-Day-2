@@ -1,15 +1,37 @@
 import { prisma } from "../lib/prisma.js";
 import bcrypt from "bcrypt";
+import { generateAccessToken, generateRefreshToken } from "../utils/generateToken.js";
 
 export const AdminLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        if (!email || !password) {
+        if (typeof email !== "string" || typeof password !== "string") {
+            return res.status(400).json({
+                success: false,
+                message: "invalid type",
+            })
+        }
+
+        if (!email.trim() || !password.trim()) {
             return res.status(400).json({
                 success: false,
                 message: "Email and password are required",
-            });
+            })
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid email format",
+            })
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: "Password must be at least 6 characters",
+            })
         }
 
         const admin = await prisma.admin.findUnique({
@@ -34,9 +56,22 @@ export const AdminLogin = async (req, res) => {
             });
         }
 
+        const accessToken = generateAccessToken(admin.id, admin.firstname,admin.email);
+        const refreshToken = generateRefreshToken(admin.id);
+
+        res.cookie('refreshtoken', refreshToken,{
+            httpOnly:true,
+            secure: false,
+            sameSite: 'strict',
+            maxAge: 7*24*60*1000,
+    })
+
+        
+
         return res.status(200).json({
             success: true,
             message: "Login success",
+            accessToken:accessToken,
             data: {
                 id: admin.id,
                 firstName: admin.firstName,

@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma.js";
+import { ErrorHandler } from "../middlewares/Errorhandler.js";
 
 
 const formatStudent = (student, overrides = {}) => ({
@@ -157,12 +158,7 @@ export const GetStudents = async (req, res) => {
         })
 
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error",
-            error: error.message,
-        });
+        ErrorHandler(error,req,res)
     }
 }
 
@@ -224,10 +220,7 @@ export const UpdateStudent = async (req, res) => {
             })
         })
     } catch (error) {
-        return res.status(500).json({
-            success: false,
-            error: "Internal Server Error!"
-        })
+        ErrorHandler(error,req,res)
     }
 }
 
@@ -264,9 +257,6 @@ export const DeleteStudent = async (req, res) => {
             message: "Student deleted successfully"
         })
     } catch (error) {
-        return res.status(500).json({
-            success: false,
-            error: "Internal Server Error!"
-        })
+        ErrorHandler(error,req,res)
     }
 }
