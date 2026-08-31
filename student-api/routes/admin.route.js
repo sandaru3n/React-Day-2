@@ -7,4 +7,11 @@ const AdminRoute = express.Router();
 
 AdminRoute.post("/login", validate(adminLoginSchema), AdminLogin);
 
+AdminRoute.post("/refresh-token", (req, res) => {
+    return res.json({
+        message: "token refresh",
+        cookie:req.cookies
+    })
+});
+
 export default AdminRoute;
